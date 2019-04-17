@@ -1,0 +1,5 @@
+.vscode/
+mychap_server/
+client
+client.dSYM
+*.o
