@@ -9,12 +9,22 @@ UT_DIR	=	./tests/
 
 UT_SRC	=	$(UT_DIR)parsing.c \
 
+TEST_FILES  = 	$(SRC_FILE)parsing.c\
+				$(SRC_FILE)global.c\
+				$(SRC_FILE)utils.c\
+
+TESTED = $(TEST_FILES:.c=.o)
+
 UT	=	units
 
 SRC_FILE = 	./src/
 
 SRC		=	$(SRC_FILE)main.c\
 			$(SRC_FILE)global.c\
+			$(SRC_FILE)parsing.c\
+			$(SRC_FILE)utils.c\
+			$(SRC_FILE)config_socket.c\
+			$(SRC_FILE)auth.c\
 
 OBJ		=	$(SRC:.c=.o)
 
@@ -25,7 +35,7 @@ NAME	=	client
 CFLAGS	=	-W -Wall -Wextra
 CFLAGS +=   -I./includes
 
-LDFLAGS	=  -lcriterion -lgcov --coverage -fprofile-arcs -ftest-coverage
+LDFLAGS	=  -lcriterion --coverage -fprofile-arcs -ftest-coverage
 
 all:	$(NAME)
 
@@ -35,9 +45,9 @@ $(NAME): $(OBJ)
 gdb:
 	$(CC) -o $(NAME) $(SRC) $(CFLAGS) -g3
 
-tests_run: $(OBJ)
-	$(CC) -o $(UT) $(UT_SRC) $(OBJ) $(LDFLAGS) -I../includes
-	./$(UT)
+tests_run: $(TESTED)
+	$(CC) -o $(UT) $(UT_SRC) $(TESTED) $(LDFLAGS) -I./includes
+	./$(UT) --verbose
 	gcovr
 	gcovr -b
 
@@ -71,4 +81,4 @@ fclean:	clean
 
 re: 	fclean all
 
-.PHONY: all clean fclean re tests_run
+.PHONY: all clean fclean re tests_run html gdb

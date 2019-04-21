@@ -3,3 +3,7 @@ mychap_server/
 client
 client.dSYM
 *.o
+*.gcno
+*.gcda
+units
+server
