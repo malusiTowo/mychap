@@ -40,7 +40,7 @@ LDFLAGS	=  -lcriterion --coverage -fprofile-arcs -ftest-coverage
 all:	$(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
+	$(CC) -o $(NAME) $(OBJ) $(CFLAGS) -I/usr/local/opt/openssl/include -lcrypto
 
 gdb:
 	$(CC) -o $(NAME) $(SRC) $(CFLAGS) -g3

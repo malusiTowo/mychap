@@ -14,8 +14,18 @@ void usage(int code)
     exit(code);
 }
 
+// FIXME: parse cmd args correctly
 void error_handling(int ac, char **av)
 {
     if (ac != 7)
-        exit(FAIL);
+        usage(FAIL);
+}
+
+void cleanup(client *client, cmd_args *args)
+{
+    free(args->port);
+    free(args->ip);
+    free(args->password);
+    free(client->_config);
+    close(client->sock);
 }

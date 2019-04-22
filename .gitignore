@@ -7,3 +7,7 @@ client.dSYM
 *.gcda
 units
 server
+a.out
+a.out.dSYM/
+src/udp.c
+udp_client.c
