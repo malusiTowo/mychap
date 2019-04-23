@@ -14,8 +14,7 @@ void usage(int code)
     exit(code);
 }
 
-// FIXME: parse cmd args correctly
-void error_handling(int ac, char **av)
+void error_handling(int ac)
 {
     if (ac != 7)
         usage(FAIL);

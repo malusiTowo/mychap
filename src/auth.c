@@ -16,32 +16,43 @@ char *sha256_hash(char *str)
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, str, strlen(str));
     SHA256_Final(hash, &sha256);
-    for (int i = 0; i < 64; i++)
-        sprintf(&hashed[2 * i], "%.2x", hash[i]);
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+        sprintf(&hashed[2 * i], "%02x", hash[i]);
+    hashed[64] = '\0';
     return hashed;
 }
 
-void send_msg(client *client, const char *msg)
+void send_msg(client *client, const char *msg, cmd_args *args)
 {
-    if (sendto(client->sock, msg, client->_ip4.iph_header_len, 0, (struct sockaddr *)client->_config, sizeof(client->_config)) < SUCCESS) {
+    char data[4096] = {0};
+    client->_ip4 = (struct iphdr *)data;
+    client->_udp = (struct udphdr *)(data + sizeof(struct iphdr));
+    client->payload = data + sizeof(struct iphdr) + sizeof(struct udphdr);
+    client->payload = strdup(msg);
+    configure_headers(client, args, data);
+    socklen_t addrlen = sizeof(struct sockaddr_in);
+
+    if (sendto(client->sock, data, client->_ip4->tot_len, 0,
+    (struct sockaddr *)client->_config, addrlen) < SUCCESS) {
         perror("sendto");
         exit(FAIL);
     }
 }
 
-char *get_msg(client *client)
+void get_msg(client *client, char *msg)
 {
-    char *buffer = malloc(sizeof(char) * PACKET_LEN);
-    if (!buffer) {
-        perror("malloc");
-        exit(FAIL);
-    }
-    if (recvfrom(client->sock, (char *)buffer, PACKET_LEN, 0,
-    (struct sockaddr *)client->_config, sizeof(client->_config)) < SUCCESS) {
+    int len = 0;
+    struct sockaddr_storage from;
+    socklen_t addrlen = sizeof(from);
+    memset(msg, 0, PACKET_LEN);
+    memset(&from, 0, sizeof(struct sockaddr_in));
+
+    if ((len = recvfrom(client->sock, msg, sizeof(msg), 0,
+    (struct sockaddr *)&from, &addrlen)) < SUCCESS) {
         perror("recvfrom");
         exit(FAIL);
     }
-    return buffer;
+    msg[len] = '\0';
 }
 
 void check_challenge_success(char *str)
@@ -54,11 +65,12 @@ void check_challenge_success(char *str)
 
 void iniate_handshake(client *client, cmd_args *args)
 {
-    char *secret = NULL, *response = NULL;
-    send_msg(client, INIT_MSG);
-    secret = get_msg(client);
-    secret = sha256_hash(strcat(secret, args->password));
-    send_msg(client, secret);
-    response = get_msg(client);
-    check_challenge_success(response);
+    char secret[PACKET_LEN];
+    char *response = NULL;
+    send_msg(client, INIT_MSG, args);
+    get_msg(client, secret);
+    response = sha256_hash(strcat(secret, args->password));
+    send_msg(client, response, args);
+    get_msg(client, secret);
+    check_challenge_success(secret);
 }

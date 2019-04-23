@@ -34,16 +34,17 @@ NAME	=	client
 
 CFLAGS	=	-W -Wall -Wextra
 CFLAGS +=   -I./includes
+CFLAGS +=  -I/usr/local/opt/openssl/include
 
 LDFLAGS	=  -lcriterion --coverage -fprofile-arcs -ftest-coverage
 
 all:	$(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS) -I/usr/local/opt/openssl/include -lcrypto
+	$(CC) -o $(NAME) $(OBJ) $(CFLAGS) -lcrypto
 
 gdb:
-	$(CC) -o $(NAME) $(SRC) $(CFLAGS) -g3
+	$(CC) -o $(NAME) $(SRC) $(CFLAGS) -g3 -lcrypto
 
 tests_run: $(TESTED)
 	$(CC) -o $(UT) $(UT_SRC) $(TESTED) $(LDFLAGS) -I./includes

@@ -18,6 +18,7 @@ bool check_ip(const char *str)
         if (!(str[i] >= '0' && str[i] <= '9'))
             return false;
     }
+
     return true;
 }
 
@@ -45,7 +46,7 @@ bool evaluate_opt(int *opt, cmd_args *args)
             break;
         case ':':
         case '?':
-           return false;
+            return false;
     }
     return true;
 }
@@ -53,12 +54,20 @@ bool evaluate_opt(int *opt, cmd_args *args)
 bool parse_cmd_args(int ac, char **av, cmd_args *args)
 {
     int opt;
+    static struct option long_options[] =
+    {
+        {"password", required_argument, NULL, 'P'},
+        {"port", required_argument, NULL, 'p'},
+        {"target", required_argument, NULL, 't'},
+        {NULL, 0, NULL, 0}
+    };
 
-    while((opt = getopt(ac, av, ":t:p:P:")) != ERROR) {
+    while ((opt = getopt_long(ac, av, ":t:p:P:",
+    long_options, NULL)) != ERROR) {
         if (!evaluate_opt(&opt, args))
             return false;
     }
     if (optind < ac)
-       return false;
+        return false;
     return true;
 }

@@ -19,47 +19,25 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include <sys/select.h>
-#include <netinet/in.h>
+#include <netinet/udp.h>
+#include <netinet/ip.h>
 #include <openssl/sha.h>
+#include <getopt.h>
 
 #define INIT_MSG "client hello"
 #define PACKET_LEN 1024
 
 /* HEADERS */
 
-typedef struct udp_header_t
-{
-    unsigned short int udph_srcport;
-    unsigned short int udph_destport;
-    unsigned short int udph_len;
-    unsigned short int udph_chksum;
-} udp_header;
-
-typedef struct ip4_header_t
-{
-    unsigned char      iph_header_len;
-    unsigned char      ip_version;
-    unsigned char      iph_type_service;
-    unsigned short int iph_total_len;
-    unsigned short int iph_identifier;
-    unsigned char      iph_flag;
-    unsigned short int iph_offset;
-    unsigned char      iph_ttl;
-    unsigned char      iph_protocol;
-    unsigned short int iph_chksum;
-    unsigned int       iph_sourceip;
-    unsigned int       iph_destip;
-
-} ip4_header;
-
 typedef struct client_t
 {
-    ip4_header _ip4;
-    udp_header _udp;
+    struct iphdr *_ip4;
+    struct udphdr *_udp;
     struct sockaddr_in *_config;
     int sock;
+    char *payload;
 } client;
+
 
 typedef struct cmd_args_t
 {
@@ -80,15 +58,16 @@ bool check_port(const char *str);
 void create_socket(client *client);
 void configure_socket(client *client,cmd_args *args);
 void init_client(client *client, cmd_args *args);
-void configure_headers(client *client, cmd_args *args);
+void configure_headers(client *client, cmd_args *args, char * data);
 
 /* UTILS */
 void usage(int code);
-void error_handling(int ac, char **av);
+void error_handling(int ac);
 void cleanup(client *client, cmd_args *args);
 
 /* AUTH */
-void send_msg(client *client, const char *msg);
+void send_msg(client *client, const char *msg, cmd_args *args);
+void get_msg(client *client, char *msg);
 void create_headers(client *client, cmd_args *args);
 void iniate_handshake(client *client, cmd_args *args);
 
