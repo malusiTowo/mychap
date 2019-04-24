@@ -33,7 +33,7 @@ void send_msg(client *client, const char *msg, cmd_args *args)
     client->_ip4 = (struct iphdr *)data;
     client->_udp = (struct udphdr *)(data + sizeof(struct iphdr));
     client->payload = data + sizeof(struct iphdr) + sizeof(struct udphdr);
-    client->payload = strdup(msg);
+    strcpy(client->payload, msg);
     configure_headers(client, args, data);
     socklen_t addrlen = sizeof(struct sockaddr_in);
 
