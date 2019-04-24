@@ -8,6 +8,8 @@
 #ifndef CHAP_H
 #define CHAP_H
 
+#define _GNU_SOURCE 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,8 +26,6 @@
 #include <openssl/sha.h>
 #include <getopt.h>
 
-#define INIT_MSG "client hello"
-#define PACKET_LEN 1024
 
 /* HEADERS */
 
@@ -56,7 +56,7 @@ bool check_port(const char *str);
 
 /* CONFIG SOCKET */
 void create_socket(client *client);
-void configure_socket(client *client,cmd_args *args);
+void configure_socket(client *client, cmd_args *args);
 void init_client(client *client, cmd_args *args);
 void configure_headers(client *client, cmd_args *args, char * data);
 

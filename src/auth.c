@@ -10,15 +10,20 @@
 
 char *sha256_hash(char *str)
 {
-    char *hashed = malloc(sizeof(char) * SHA256_DIGEST_LENGTH);
-    unsigned char hash[SHA256_DIGEST_LENGTH];
+    char *tmp = NULL;
+    char *hashed = malloc(sizeof(char) * 64);
+    unsigned char hash[SHA256_DIGEST_LENGTH] = {0};
     SHA256_CTX sha256;
+
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, str, strlen(str));
     SHA256_Final(hash, &sha256);
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        sprintf(&hashed[2 * i], "%02x", hash[i]);
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        asprintf(&tmp, "%02x", hash[i]);
+        strcat(hashed, tmp);
+    }
     hashed[64] = '\0';
+    free(tmp);
     return hashed;
 }
 
@@ -42,7 +47,7 @@ void send_msg(client *client, const char *msg, cmd_args *args)
 void get_msg(client *client, char *msg)
 {
     int len = 0;
-    struct sockaddr_storage from;
+    struct sockaddr_in from;
     socklen_t addrlen = sizeof(from);
     memset(msg, 0, PACKET_LEN);
     memset(&from, 0, sizeof(struct sockaddr_in));
@@ -69,7 +74,8 @@ void iniate_handshake(client *client, cmd_args *args)
     char *response = NULL;
     send_msg(client, INIT_MSG, args);
     get_msg(client, secret);
-    response = sha256_hash(strcat(secret, args->password));
+    char *challenge = strcat(secret, args->password);
+    response = sha256_hash(challenge);
     send_msg(client, response, args);
     get_msg(client, secret);
     check_challenge_success(secret);

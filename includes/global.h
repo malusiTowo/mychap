@@ -11,5 +11,7 @@
 extern const int ERROR;
 extern const int SUCCESS;
 extern const int FAIL;
+extern const char *INIT_MSG;
+extern const int PACKET_LEN;
 
 #endif
