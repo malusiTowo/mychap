@@ -28,7 +28,7 @@ unsigned short csum(unsigned short *buf, int nwords)
 
 void configure_socket(client *client, cmd_args *args)
 {
-    int opt = 1;
+    char opt = 1;
     client->_config->sin_family = AF_INET;
     client->_config->sin_addr.s_addr = inet_addr(args->ip);
     client->_config->sin_port = htons(atoi(args->port));
