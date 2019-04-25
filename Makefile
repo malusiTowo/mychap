@@ -25,6 +25,7 @@ SRC		=	$(SRC_FILE)main.c\
 			$(SRC_FILE)utils.c\
 			$(SRC_FILE)config_socket.c\
 			$(SRC_FILE)auth.c\
+			$(SRC_FILE)create_headers.c\
 
 OBJ		=	$(SRC:.c=.o)
 

@@ -29,20 +29,12 @@
 
 /* HEADERS */
 
-struct pseudo_header
-{
-	u_int32_t source_address;
-	u_int32_t dest_address;
-	u_int8_t placeholder;
-	u_int8_t protocol;
-	u_int16_t udp_length;
-};
-
 typedef struct client_t
 {
     struct iphdr *_ip4;
     struct udphdr *_udp;
     struct sockaddr_in *_config;
+    struct sockaddr_in sock_info;
     int sock;
     char *payload;
 } client;
@@ -67,12 +59,17 @@ bool check_port(const char *str);
 void create_socket(client *client);
 void configure_socket(client *client, cmd_args *args);
 void init_client(client *client, cmd_args *args);
-void configure_headers(client *client, cmd_args *args, char * data);
+void configure_headers(client *client, cmd_args *args, char *data, int packet_len);
+struct sockaddr_in get_client_sock_info(client *client);
+void configure_udp_header(client *client, cmd_args *args,
+char *data, int packet_len);
+void configure_ip_header(client *client, char *data, int packet_len);
 
 /* UTILS */
 void usage(int code);
 void error_handling(int ac);
 void cleanup(client *client, cmd_args *args);
+unsigned short csum(unsigned short *buf, int nwords);
 
 /* AUTH */
 void send_msg(client *client, const char *msg, cmd_args *args);

@@ -34,7 +34,7 @@ void send_msg(client *client, const char *msg, cmd_args *args)
     client->_udp = (struct udphdr *)(data + sizeof(struct iphdr));
     client->payload = data + sizeof(struct iphdr) + sizeof(struct udphdr);
     strcpy(client->payload, msg);
-    configure_headers(client, args, data);
+    configure_headers(client, args, data, strlen(msg));
     socklen_t addrlen = sizeof(struct sockaddr_in);
 
     if (sendto(client->sock, data, client->_ip4->tot_len, 0,
@@ -52,7 +52,7 @@ void get_msg(client *client, char *msg)
     memset(msg, 0, PACKET_LEN);
     memset(&from, 0, sizeof(struct sockaddr_in));
 
-    if ((len = recvfrom(client->sock, msg, sizeof(msg), 0,
+    if ((len = recvfrom(client->sock, msg, PACKET_LEN, 0,
     (struct sockaddr *)&from, &addrlen)) < SUCCESS) {
         perror("recvfrom");
         exit(FAIL);
@@ -70,7 +70,9 @@ void check_challenge_success(char *str)
 
 void iniate_handshake(client *client, cmd_args *args)
 {
-    char secret[PACKET_LEN];
+    int len = PACKET_LEN + strlen(args->password);
+    char secret[len + 1];
+    memset(&secret, 0, len);
     char *response = NULL;
     send_msg(client, INIT_MSG, args);
     get_msg(client, secret);

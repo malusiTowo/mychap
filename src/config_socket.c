@@ -14,6 +14,7 @@ void create_socket(client *client)
         perror("socket");
         exit(FAIL);
     }
+    client->sock_info = get_client_sock_info(client);
 }
 
 unsigned short csum(unsigned short *buf, int nwords)
@@ -38,27 +39,6 @@ void configure_socket(client *client, cmd_args *args)
         perror("setsockopt");
         exit(FAIL);
     }
-}
-
-void configure_headers(client *client, cmd_args *args, char *data)
-{
-    client->_ip4->ihl = 5;
-    client->_ip4->version = 4;
-    client->_ip4->tos = 0;
-    client->_ip4->tot_len = sizeof(struct iphdr) +
-    sizeof(struct udphdr) + PACKET_LEN;
-    client->_ip4->id = htons(5000);
-    client->_ip4->frag_off = 0;
-    client->_ip4->ttl = 255;
-    client->_ip4->protocol = IPPROTO_UDP;
-    client->_ip4->saddr = INADDR_ANY;
-    client->_ip4->daddr = client->_config->sin_addr.s_addr;
-    client->_ip4->check = csum((unsigned short *)data, client->_ip4->tot_len);
-    client->_udp->len = htons(8 + strlen(data));
-    client->_udp->source = INADDR_ANY;
-    client->_udp->dest = htons(atoi(args->port));
-    client->_udp->check = csum((unsigned short *)(data),
-    sizeof(struct iphdr) + sizeof(struct udphdr));
 }
 
 void init_client(client *client, cmd_args *args)
