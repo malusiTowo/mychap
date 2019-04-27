@@ -44,25 +44,31 @@ void send_msg(client *client, const char *msg, cmd_args *args)
     }
 }
 
-void get_msg(client *client, char *msg)
+char *get_msg(client *client)
 {
+    char *ret = NULL;
+    struct udphdr *s;
+    char msg[PACKET_LEN];
     int len = 0;
-    struct sockaddr_in from;
-    socklen_t addrlen = sizeof(from);
-    memset(msg, 0, PACKET_LEN);
-    memset(&from, 0, sizeof(struct sockaddr_in));
 
-    if ((len = recvfrom(client->sock, msg, PACKET_LEN, 0,
-    (struct sockaddr *)&from, &addrlen)) < SUCCESS) {
-        perror("recvfrom");
-        exit(FAIL);
+    while (true) {
+        memset(msg, 0, PACKET_LEN);
+        len = recvfrom(client->sock, msg, PACKET_LEN, 0, NULL, NULL);
+        if (len < SUCCESS) {
+            perror("recvfrom");
+            exit(FAIL);
+        }
+        s = (struct udphdr *)(msg + sizeof(struct iphdr));
+        if (s->source == client->_config->sin_port)
+            break;
     }
-    msg[len] = '\0';
+    ret = msg + sizeof(struct iphdr) + sizeof(struct udphdr);
+    return ret;
 }
 
 void check_challenge_success(char *str)
 {
-    if (strcmp(str, "KO") == SUCCESS)
+    if (strncmp(str, "KO", 2) == SUCCESS)
         printf("KO\n");
     else
         printf("Secret: '%s'\n", str);
@@ -70,15 +76,13 @@ void check_challenge_success(char *str)
 
 void iniate_handshake(client *client, cmd_args *args)
 {
-    int len = PACKET_LEN + strlen(args->password);
-    char secret[len + 1];
-    memset(&secret, 0, len);
+    char *secret = NULL;
     char *response = NULL;
     send_msg(client, INIT_MSG, args);
-    get_msg(client, secret);
+    secret = get_msg(client);
     char *challenge = strcat(secret, args->password);
     response = sha256_hash(challenge);
     send_msg(client, response, args);
-    get_msg(client, secret);
+    secret = get_msg(client);
     check_challenge_success(secret);
 }

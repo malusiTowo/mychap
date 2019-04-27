@@ -25,9 +25,18 @@
 #include <netinet/ip.h>
 #include <openssl/sha.h>
 #include <getopt.h>
-
+#include <netdb.h>
 
 /* HEADERS */
+
+struct pseudo_header
+{
+    u_int32_t source_address;
+    u_int32_t dest_address;
+    u_int8_t placeholder;
+    u_int8_t protocol;
+    u_int16_t udp_length;
+};
 
 typedef struct client_t
 {
@@ -59,10 +68,10 @@ bool check_port(const char *str);
 void create_socket(client *client);
 void configure_socket(client *client, cmd_args *args);
 void init_client(client *client, cmd_args *args);
-void configure_headers(client *client, cmd_args *args, char *data, int packet_len);
-struct sockaddr_in get_client_sock_info(client *client);
-void configure_udp_header(client *client, cmd_args *args,
+void configure_headers(client *client, cmd_args *args,
 char *data, int packet_len);
+struct sockaddr_in get_client_sock_info(client *client);
+void configure_udp_header(client *client, cmd_args *args, int packet_len);
 void configure_ip_header(client *client, char *data, int packet_len);
 
 /* UTILS */
@@ -73,7 +82,7 @@ unsigned short csum(unsigned short *buf, int nwords);
 
 /* AUTH */
 void send_msg(client *client, const char *msg, cmd_args *args);
-void get_msg(client *client, char *msg);
+char *get_msg(client *client);
 void create_headers(client *client, cmd_args *args);
 void iniate_handshake(client *client, cmd_args *args);
 

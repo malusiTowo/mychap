@@ -17,14 +17,29 @@ void create_socket(client *client)
     client->sock_info = get_client_sock_info(client);
 }
 
-unsigned short csum(unsigned short *buf, int nwords)
+
+unsigned short csum(unsigned short *ptr, int nbytes)
 {
-    unsigned long sum;
-    for (sum = 0; nwords > 0; nwords--)
-            sum += *buf++;
+    register long sum;
+    unsigned short oddbyte;
+    register short answer;
+
+    sum = 0;
+    while (nbytes > 1) {
+        sum += *ptr++;
+        nbytes -= 2;
+    }
+    if (nbytes == 1) {
+        oddbyte = 0;
+        *((u_char *)&oddbyte) = *(u_char *)ptr;
+        sum += oddbyte;
+    }
+
     sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    return (unsigned short)(~sum);
+    sum = sum + (sum >> 16);
+    answer = (short)~sum;
+
+    return (answer);
 }
 
 void configure_socket(client *client, cmd_args *args)

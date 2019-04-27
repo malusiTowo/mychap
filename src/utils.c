@@ -25,6 +25,5 @@ void cleanup(client *client, cmd_args *args)
     free(args->port);
     free(args->ip);
     free(args->password);
-    free(client->_config);
     close(client->sock);
 }
