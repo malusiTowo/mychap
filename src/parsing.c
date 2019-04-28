@@ -22,6 +22,22 @@ bool check_ip(const char *str)
     return true;
 }
 
+void check_host_name(cmd_args *args)
+{
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = 0;
+    hints.ai_flags = AI_ADDRCONFIG;
+    struct addrinfo *res = NULL;
+    int err = getaddrinfo(args->ip, args->port, &hints, &res);
+    if (err != SUCCESS) {
+        printf("No such hostname: '%s'\n", args->ip);
+        exit(FAIL);
+    }
+}
+
 bool check_port(const char *str)
 {
     int port = atoi(str);
@@ -32,9 +48,7 @@ bool evaluate_opt(int *opt, cmd_args *args)
 {
     switch (*opt) {
         case 't':
-            args->ip = check_ip(optarg) ? strdup(optarg) : NULL;
-            if (!args->ip)
-                return false;
+            args->ip = strdup(optarg);
             break;
         case 'p':
             args->port = check_port(optarg) ? strdup(optarg) : NULL;
@@ -67,6 +81,7 @@ bool parse_cmd_args(int ac, char **av, cmd_args *args)
         if (!evaluate_opt(&opt, args))
             return false;
     }
+    check_host_name(args);
     if (optind < ac)
         return false;
     return true;
