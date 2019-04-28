@@ -8,18 +8,11 @@
 #include "chap.h"
 #include "global.h"
 
-bool check_ip(const char *str)
+char *check_ip(char *str)
 {
     if (strcmp(str, "localhost") == 0)
-        return true;
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (str[i] == '.')
-            continue;
-        if (!(str[i] >= '0' && str[i] <= '9'))
-            return false;
-    }
-
-    return true;
+        return "127.0.0.1";
+    return str;
 }
 
 void check_host_name(cmd_args *args)
@@ -34,7 +27,7 @@ void check_host_name(cmd_args *args)
     int err = getaddrinfo(args->ip, args->port, &hints, &res);
     if (err != SUCCESS) {
         printf("No such hostname: '%s'\n", args->ip);
-        exit(FAIL);
+        exit(SUCCESS);
     }
 }
 
@@ -48,7 +41,7 @@ bool evaluate_opt(int *opt, cmd_args *args)
 {
     switch (*opt) {
         case 't':
-            args->ip = strdup(optarg);
+            args->ip = check_ip(optarg);
             break;
         case 'p':
             args->port = check_port(optarg) ? strdup(optarg) : NULL;

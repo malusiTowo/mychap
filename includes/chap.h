@@ -61,7 +61,7 @@ typedef struct cmd_args_t
 /* PARSING */
 bool parse_cmd_args(int ac, char **av, cmd_args *args);
 bool evaluate_opt(int *opt, cmd_args *args);
-bool check_ip(const char *str);
+char *check_ip(char *str);
 bool check_port(const char *str);
 
 /* CONFIG SOCKET */
